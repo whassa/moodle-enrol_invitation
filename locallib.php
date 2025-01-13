@@ -140,7 +140,7 @@ class invitation_manager {
                 $invitation->token = $token;
                 $invitation->tokenused = false;
                 $invitation->roleid = $resend ? $data->roleid : $data->role_group['roleid'];
-
+                
                 $groups = filterGroups($data->courseid, $USER, $data->groups);
                 if (!is_null($groups) && !empty($groups)) {
                     $invitation->groupsid =  json_encode($groups);
