@@ -1058,7 +1058,7 @@ function filterGroups($courseid, $user, $groups) {
         $user_groups = groups_get_user_groups($courseid, $user->id);
         $filtered_group = array_filter($groups, function($groupid) use ($user_groups) {
             return in_array($groupid, $user_groups[0]);
-        });
+        }, ARRAY_FILTER_USE_KEY);
         return $filtered_group;
     }
 }
