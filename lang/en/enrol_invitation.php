@@ -62,8 +62,6 @@ $string['emailmsghtml_help'] = '<p>Good day,</p>
 <p>You are invited to join the following course:</p>
 <ul>
   <li>Course name: <b>{$a->coursename}</b></li>
-  <li>Start date: <b>{$a->start}</b></li>
-  <li>End date: <b>{$a->end}</b></li>
 </ul>
 {$a->message}
 <p>Sign-in to confirm your enrolment in the course.</p>

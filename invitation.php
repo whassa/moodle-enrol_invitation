@@ -135,13 +135,16 @@ if ($data && confirm_sesskey()) {
     // Check for the invitation of multiple users.
     $delimiters = "/[;, \r\n]/";
     $emaillist = invitation_form::parsedsvemails($data->email, $delimiters);
-    $userlistmails = invitation_form::parse_userlist_emails($data->userlist);
-    if (isset($data->cohortlist)) {
-        $cohortmails = invitation_form::parse_cohortlist_emails($data->cohortlist, $course);
-        $emaillist = array_merge($emaillist, $userlistmails, $cohortmails);
-    } else {
-        $emaillist = array_merge($emaillist, $userlistmails);
+    if (isset($data->userlist)) {
+        $userlistmails = invitation_form::parse_userlist_emails($data->userlist);
+        if (isset($data->cohortlist)) {
+            $cohortmails = invitation_form::parse_cohortlist_emails($data->cohortlist, $course);
+            $emaillist = array_merge($emaillist, $userlistmails, $cohortmails);
+        } else {
+            $emaillist = array_merge($emaillist, $userlistmails);
+        }
     }
+    
     $emaillist = array_unique($emaillist);
 
     foreach ($emaillist as $email) {

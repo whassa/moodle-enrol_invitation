@@ -298,11 +298,11 @@ function xmldb_enrol_invitation_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2021073000, 'enrol', 'invitation');
     }
 
-    if ($oldversion < 2024092600) {
+    if ($oldversion < 2025011300) {
         $table = new xmldb_table('enrol_invitation');
 
         // Add status column.
-        $fields[] = new xmldb_field('groupsid',XMLDB_TYPE_TEXT, 'small');
+        $fields[] = new xmldb_field('groupsid',XMLDB_TYPE_TEXT,null,null,null,null,null,'show_from_email');
 
         foreach ($fields as $field) {
             // Conditionally launch add field subject.

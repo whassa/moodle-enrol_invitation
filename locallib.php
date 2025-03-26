@@ -140,7 +140,7 @@ class invitation_manager {
                 $invitation->token = $token;
                 $invitation->tokenused = false;
                 $invitation->roleid = $resend ? $data->roleid : $data->role_group['roleid'];
-
+                
                 $groups = filterGroups($data->courseid, $USER, $data->groups);
                 if (!is_null($groups) && !empty($groups)) {
                     $invitation->groupsid =  json_encode($groups);
@@ -171,7 +171,7 @@ class invitation_manager {
 
                 $invitation->inviterid = $USER->id;
                 $invitation->notify_inviter = empty($data->notify_inviter) ? 0 : 1;
-                $invitation->show_from_email = empty($data->show_from_email) ? 0 : 1;
+                $invitation->show_from_email = 1;
 
                 // Construct message: custom (if any) + template.
 
@@ -1058,7 +1058,7 @@ function filterGroups($courseid, $user, $groups) {
         $user_groups = groups_get_user_groups($courseid, $user->id);
         $filtered_group = array_filter($groups, function($groupid) use ($user_groups) {
             return in_array($groupid, $user_groups[0]);
-        });
+        }, ARRAY_FILTER_USE_KEY);
         return $filtered_group;
     }
 }
