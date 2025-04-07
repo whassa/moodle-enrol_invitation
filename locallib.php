@@ -141,10 +141,16 @@ class invitation_manager {
                 $invitation->tokenused = false;
                 $invitation->roleid = $resend ? $data->roleid : $data->role_group['roleid'];
                 
-                $groups = filterGroups($data->courseid, $USER, $data->groups);
-                if (!is_null($groups) && !empty($groups)) {
-                    $invitation->groupsid =  json_encode($groups);
+                if (isset($data->groups)) {
+                    $groups = filterGroups($data->courseid, $USER, $data->groups);
+
+                    if (!is_null($groups) && !empty($groups)) {
+                        $invitation->groupsid =  json_encode($groups);
+                    }
+                } else {
+                    $invitation->groupsid = null;
                 }
+              
                 $invitation->status = null;
 
                 // Set the timesent/timeexpiration date for the invitation.
