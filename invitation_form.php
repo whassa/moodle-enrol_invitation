@@ -115,27 +115,30 @@ class invitation_form extends moodleform {
         } else {
             $userfields = get_extra_user_fields($context);
         }
-        $options = [
-            'ajax' => 'enrol_manual/form-potential-user-selector',
-            'multiple' => true,
-            'courseid' => $course->id,
-            'enrolid' => $instance->id,
-            'perpage' => $CFG->maxusersperpage,
-            'userfields' => implode(',', $userfields),
-            'valuehtmlcallback' => function ($value) {
-                global $OUTPUT;
-                if ($user = \core_user::get_user($value)) {
-                    $useroptiondata = [
-                        'fullname' => fullname($user),
-                        'idnumber' => $user->idnumber,
-                        'email' => $user->email,
-                        'suspended' => 0,
-                    ];
-                    return $OUTPUT->render_from_template('enrol_manual/form-user-selector-suggestion', $useroptiondata);
-                }
-            },
-        ];
-        $mform->addElement('autocomplete', 'userlist', get_string('selectusers', 'enrol_manual'), [], $options);
+
+        if (has_capability('moodle/course:enrolreview', $context)) {
+            $options = [
+                'ajax' => 'enrol_manual/form-potential-user-selector',
+                'multiple' => true,
+                'courseid' => $course->id,
+                'enrolid' => $instance->id,
+                'perpage' => $CFG->maxusersperpage,
+                'userfields' => implode(',', $userfields),
+                'valuehtmlcallback' => function ($value) {
+                    global $OUTPUT;
+                    if ($user = \core_user::get_user($value)) {
+                        $useroptiondata = [
+                            'fullname' => fullname($user),
+                            'idnumber' => $user->idnumber,
+                            'email' => $user->email,
+                            'suspended' => 0,
+                        ];
+                        return $OUTPUT->render_from_template('enrol_manual/form-user-selector-suggestion', $useroptiondata);
+                    }
+                },
+            ];
+            $mform->addElement('autocomplete', 'userlist', get_string('selectusers', 'enrol_manual'), [], $options);
+        }
 
         if (has_capability('moodle/cohort:manage', $context) || has_capability('moodle/cohort:view', $context)) {
             // Check to ensure there is at least one visible cohort before displaying the select box.
@@ -179,9 +182,9 @@ class invitation_form extends moodleform {
         $temp = new stdClass();
         $temp->email = $USER->email;
         $temp->supportemail = !empty($CFG->supportemail) ? $CFG->supportemail : $CFG->noreplyaddress;
-        $mform->addElement('checkbox', 'show_from_email', '', get_string('show_from_email', 'enrol_invitation', $temp));
+        //$mform->addElement('checkbox', 'show_from_email', '', get_string('show_from_email', 'enrol_invitation', $temp));
         $mform->addElement('checkbox', 'notify_inviter', '', get_string('notify_inviter', 'enrol_invitation', $temp));
-        $mform->setDefault('show_from_email', 1);
+        //$mform->setDefault('show_from_email', 1);
         $mform->setDefault('notify_inviter', 0);
 
         // Set defaults if the user is resending an invite that expired.
@@ -190,7 +193,7 @@ class invitation_form extends moodleform {
             $mform->setDefault('email', $prefilled['email']);
             $mform->setDefault('subject', $prefilled['subject']);
             $mform->setDefault('message', $prefilled['message']);
-            $mform->setDefault('show_from_email', $prefilled['show_from_email']);
+            //$mform->setDefault('show_from_email', $prefilled['show_from_email']);
             $mform->setDefault('notify_inviter', $prefilled['notify_inviter']);
         }
 
@@ -412,6 +415,21 @@ class invitation_email_form extends moodleform {
         $mform->setType('courseid', PARAM_INT);
         $mform->setDefault('courseid', $course->id);
 
+
+        $groups = $this->getappropiategroups($course, $USER);
+
+        if (!empty($groups)) {
+            $mform->addElement('header', 'header_group', get_string('header_group', 'enrol_invitation'));
+            $label = get_string('assigngroup', 'enrol_invitation');
+
+            $groupselem = [];
+
+            foreach( $groups as $group) {
+                $groupselem[] = &$mform->createElement('checkbox', $group->id, $group->name);
+            }
+            $mform->addGroup($groupselem, 'groups', $label, '<br>');
+        }
+
         // Email address field.
         $mform->addElement('header', 'header_email', get_string('header_email', 'enrol_invitation'));
         $mform->addElement(
@@ -438,27 +456,30 @@ class invitation_email_form extends moodleform {
             $userfields = \core_user\fields::get_identity_fields($context, false);
         }
 
-        $options = [
-            'ajax' => 'enrol_manual/form-potential-user-selector',
-            'multiple' => true,
-            'courseid' => $course->id,
-            'enrolid' => $instance->id,
-            'perpage' => $CFG->maxusersperpage,
-            'userfields' => implode(',', $userfields),
-            'valuehtmlcallback' => function ($value) {
-                global $OUTPUT;
-                if ($user = \core_user::get_user($value)) {
-                    $useroptiondata = [
-                        'fullname' => fullname($user),
-                        'idnumber' => $user->idnumber,
-                        'email' => $user->email,
-                        'suspended' => 0,
-                    ];
-                    return $OUTPUT->render_from_template('enrol_manual/form-potential-user-selector', $useroptiondata);
-                }
-            },
-        ];
-        $mform->addElement('autocomplete', 'userlist', get_string('selectusers', 'enrol_manual'), [], $options);
+        if (has_capability('moodle/course:enrolreview', $context)) {
+            $options = [
+                'ajax' => 'enrol_manual/form-potential-user-selector',
+                'multiple' => true,
+                'courseid' => $course->id,
+                'enrolid' => $instance->id,
+                'perpage' => $CFG->maxusersperpage,
+                'userfields' => implode(',', $userfields),
+                'valuehtmlcallback' => function ($value) {
+                    global $OUTPUT;
+                    if ($user = \core_user::get_user($value)) {
+                        $useroptiondata = [
+                            'fullname' => fullname($user),
+                            'idnumber' => $user->idnumber,
+                            'email' => $user->email,
+                            'suspended' => 0,
+                        ];
+                        return $OUTPUT->render_from_template('enrol_manual/form-potential-user-selector', $useroptiondata);
+                    }
+                },
+            ];
+            $mform->addElement('autocomplete', 'userlist', get_string('selectusers', 'enrol_manual'), [], $options);
+        }
+    
 
         if (has_capability('moodle/cohort:manage', $context) || has_capability('moodle/cohort:view', $context)) {
             // Check to ensure there is at least one visible cohort before displaying the select box.
@@ -567,4 +588,23 @@ class invitation_email_form extends moodleform {
 
         return $parsedemails;
     }
+
+      /**
+     * Private class method to return a list of appropriate roles for given course and user.
+     *
+     * @param object $course Course record.
+     * @param object $user User
+
+     * @return array         Returns array of roles indexed by role archetype.
+     */
+    private function getappropiategroups($course, $user) {
+        $context = context_course::instance($course->id, $user->id);
+        if (has_capability('moodle/course:managegroups', $context)) {
+            $groups = groups_get_all_groups($course->id);
+        } else {
+            $groups = groups_get_all_groups($course->id, $user->id);
+        }
+        return $groups;
+    }
+
 }

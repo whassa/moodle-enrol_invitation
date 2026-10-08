@@ -140,11 +140,17 @@ class invitation_manager {
                 $invitation->token = $token;
                 $invitation->tokenused = false;
                 $invitation->roleid = $resend ? $data->roleid : $data->role_group['roleid'];
+                
+                if (isset($data->groups)) {
+                    $groups = filterGroups($data->courseid, $USER, $data->groups);
 
-                $groups = filterGroups($data->courseid, $USER, $data->groups);
-                if (!is_null($groups) && !empty($groups)) {
-                    $invitation->groupsid =  json_encode($groups);
+                    if (!is_null($groups) && !empty($groups)) {
+                        $invitation->groupsid =  json_encode($groups);
+                    }
+                } else {
+                    $invitation->groupsid = null;
                 }
+              
                 $invitation->status = null;
 
                 // Set the timesent/timeexpiration date for the invitation.
@@ -171,7 +177,7 @@ class invitation_manager {
 
                 $invitation->inviterid = $USER->id;
                 $invitation->notify_inviter = empty($data->notify_inviter) ? 0 : 1;
-                $invitation->show_from_email = empty($data->show_from_email) ? 0 : 1;
+                $invitation->show_from_email = 1;
 
                 // Construct message: custom (if any) + template.
 
@@ -992,6 +998,27 @@ function distance_of_time_in_words($fromtime, $totime = 0, $includeseconds = fal
 }
 
 /**
+ * Whether the invitee may create their account from the invitation (signup.php).
+ *
+ * True when the feature is enabled, the invitation is not tied to an existing user
+ * and no account uses the invitation email address yet.
+ *
+ * @param object $invitation
+ * @return bool
+ */
+function invitation_signup_allowed($invitation) {
+    global $DB, $CFG;
+
+    if (!get_config('enrol_invitation', 'allowsignup') || !empty($invitation->userid)) {
+        return false;
+    }
+
+    $select = 'deleted = 0 AND mnethostid = :mnethostid AND ' . $DB->sql_equal('email', ':email', false);
+    $params = ['mnethostid' => $CFG->mnet_localhost_id, 'email' => trim($invitation->email)];
+    return !$DB->record_exists_select('user', $select, $params);
+}
+
+/**
  * Setups the object used in the notice strings for when a user is accepting a site invitation.
  *
  * @param object $invitation
@@ -1058,7 +1085,7 @@ function filterGroups($courseid, $user, $groups) {
         $user_groups = groups_get_user_groups($courseid, $user->id);
         $filtered_group = array_filter($groups, function($groupid) use ($user_groups) {
             return in_array($groupid, $user_groups[0]);
-        });
+        }, ARRAY_FILTER_USE_KEY);
         return $filtered_group;
     }
 }

@@ -1,6 +1,7 @@
 ##### Only include English
 /lang/*
 !/lang/en
+!/lang/fr
 
 ##### Windows
 # Windows thumbnail cache files
