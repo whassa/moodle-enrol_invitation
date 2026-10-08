@@ -311,7 +311,7 @@ function xmldb_enrol_invitation_upgrade($oldversion) {
             }
         }
 
-        upgrade_plugin_savepoint(true, 2024092600, 'enrol', 'invitation');
+        upgrade_plugin_savepoint(true, 2025011300, 'enrol', 'invitation');
     }
 
 
