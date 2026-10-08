@@ -71,6 +71,16 @@ if ($ADMIN->fulltree) {
         )
     );
 
+    // Let invitees without an account create one from the invitation.
+    $settings->add(
+        new admin_setting_configcheckbox(
+            'enrol_invitation/allowsignup',
+            get_string('allowsignup', 'enrol_invitation'),
+            get_string('allowsignup_desc', 'enrol_invitation'),
+            1
+        )
+    );
+
     // Option to select default email subject line.
     $default = 'fullname'; // Default is course fullname.
     $name = 'enrol_invitation/defaultsubjectformat';

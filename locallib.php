@@ -998,6 +998,27 @@ function distance_of_time_in_words($fromtime, $totime = 0, $includeseconds = fal
 }
 
 /**
+ * Whether the invitee may create their account from the invitation (signup.php).
+ *
+ * True when the feature is enabled, the invitation is not tied to an existing user
+ * and no account uses the invitation email address yet.
+ *
+ * @param object $invitation
+ * @return bool
+ */
+function invitation_signup_allowed($invitation) {
+    global $DB, $CFG;
+
+    if (!get_config('enrol_invitation', 'allowsignup') || !empty($invitation->userid)) {
+        return false;
+    }
+
+    $select = 'deleted = 0 AND mnethostid = :mnethostid AND ' . $DB->sql_equal('email', ':email', false);
+    $params = ['mnethostid' => $CFG->mnet_localhost_id, 'email' => trim($invitation->email)];
+    return !$DB->record_exists_select('user', $select, $params);
+}
+
+/**
  * Setups the object used in the notice strings for when a user is accepting a site invitation.
  *
  * @param object $invitation

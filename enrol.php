@@ -149,6 +149,11 @@ if ($reject) {
 // Accept Invitation.
 //
 
+// Invitee without an account: let them create one instead of going through the login/signup pages.
+if ((!isloggedin() || isguestuser()) && invitation_signup_allowed($invitation)) {
+    redirect(new moodle_url('/enrol/invitation/signup.php', ['token' => $invitation->token]));
+}
+
 // Ensure user is logged in.
 require_login(null, false);
 
